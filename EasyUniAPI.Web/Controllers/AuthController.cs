@@ -25,5 +25,16 @@ namespace EasyUniAPI.Web.Controllers
                 ? Ok(result)
                 : Conflict(result);
         }
+
+        [HttpPost("register")]
+        [ProducesResponseType(typeof(ServiceResultDto), StatusCodes.Status201Created)]
+        [ProducesErrorResponseType(typeof(ProblemDetails))]
+        public async Task<IActionResult> Register(RegisterDto registerDto)
+        {
+            var result = await _authService.RegisterAsync(registerDto);
+            return result.IsSuccess
+                ? Created()
+                : Conflict(result);
+        }
     }
 }

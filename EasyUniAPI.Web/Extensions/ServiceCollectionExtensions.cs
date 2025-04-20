@@ -68,6 +68,7 @@ namespace EasyUniAPI.Web.Extensions
             services.AddValidatorsFromAssemblies(AppDomain.CurrentDomain.GetAssemblies());
 
             services.AddScoped<IRepository<User, string>, Repository<User, string>>();
+            services.AddScoped<IRepository<UserRole, long>, Repository<UserRole, long>>();
 
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IPasswordHashService, PasswordHashService>();

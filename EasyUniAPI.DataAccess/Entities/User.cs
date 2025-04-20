@@ -4,7 +4,7 @@ namespace EasyUniAPI.DataAccess.Entities
 {
     public class User
     {
-        public required string Id { get; set; } = Ulid.NewUlid().ToString();
+        public string Id { get; set; } = Ulid.NewUlid().ToString();
 
         public required string Email { get; set; }
 
