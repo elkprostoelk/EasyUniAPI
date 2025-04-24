@@ -14,7 +14,7 @@ namespace EasyUniAPI.DataAccess.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "Role",
+                name: "Roles",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
@@ -59,7 +59,7 @@ namespace EasyUniAPI.DataAccess.Migrations
                     table.ForeignKey(
                         name: "FK_UserRoles_Role_RoleId",
                         column: x => x.RoleId,
-                        principalTable: "Role",
+                        principalTable: "Roles",
                         principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_UserRoles_Users_UserId",
@@ -69,7 +69,7 @@ namespace EasyUniAPI.DataAccess.Migrations
                 });
 
             migrationBuilder.InsertData(
-                table: "Role",
+                table: "Roles",
                 columns: new[] { "Id", "Name" },
                 values: new object[,]
                 {
@@ -80,7 +80,7 @@ namespace EasyUniAPI.DataAccess.Migrations
 
             migrationBuilder.CreateIndex(
                 name: "IX_Role_Name",
-                table: "Role",
+                table: "Roles",
                 column: "Name",
                 unique: true);
 
@@ -103,7 +103,7 @@ namespace EasyUniAPI.DataAccess.Migrations
                 name: "UserRoles");
 
             migrationBuilder.DropTable(
-                name: "Role");
+                name: "Roles");
 
             migrationBuilder.DropTable(
                 name: "Users");
