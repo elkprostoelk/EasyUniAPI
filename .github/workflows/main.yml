@@ -13,65 +13,69 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    # Checkout the code
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    # Setup .NET environment
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: '8.0.x'
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
 
-    # Restore dependencies
-    - name: Restore dependencies
-      run: dotnet restore
+      - name: Restore dependencies
+        run: dotnet restore
 
-    # Build the solution
-    - name: Build solution
-      run: dotnet build --configuration Release --no-restore
+      - name: Build solution
+        run: dotnet build --configuration Release --no-restore
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-output
+          path: |
+            **/bin/Release/net8.0/
+            **/bin/Release/net8.0/**/*.dll
+            **/bin/Release/net8.0/**/*.pdb
 
   test:
     runs-on: ubuntu-latest
     needs: build
 
     steps:
-    # Checkout the code
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    # Setup .NET environment
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: '8.0.x'
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
 
-    # Run tests
-    - name: Run tests
-      run: dotnet test --configuration Release --no-build --verbosity normal
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-output
+          path: ./artifacts
+
+      - name: Run tests
+        run: dotnet test EasyUniAPI.Test/EasyUniAPI.Test.csproj --no-build --configuration Release --verbosity normal
 
   publish:
     runs-on: ubuntu-latest
     needs: test
 
     steps:
-    # Checkout the code
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    # Setup .NET environment
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: '8.0.x'
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
 
-    # Publish the application
-    - name: Publish application
-      run: dotnet publish EasyUniAPI.Web/EasyUniAPI.Web.csproj --configuration Release --output ./publish
+      - name: Publish application
+        run: dotnet publish EasyUniAPI.Web/EasyUniAPI.Web.csproj --configuration Release --output ./publish
 
-    # Upload artifacts (optional)
-    - name: Upload build artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: published-app
-        path: ./publish
+      - name: Upload published artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: published-app
+          path: ./publish
