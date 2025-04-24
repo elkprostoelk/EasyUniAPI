@@ -56,7 +56,7 @@ jobs:
           path: ./artifacts
 
       - name: Run tests
-        run: dotnet test EasyUniAPI.sln --no-build --configuration Release --verbosity normal
+        run: dotnet test EasyUniAPI.Test/EasyUniAPI.Test.csproj --no-build --configuration Release --verbosity normal
 
   publish:
     runs-on: ubuntu-latest
