@@ -1,5 +1,6 @@
 ﻿using EasyUniAPI.Common.Dto;
 using EasyUniAPI.Core.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EasyUniAPI.Web.Controllers
@@ -34,6 +35,16 @@ namespace EasyUniAPI.Web.Controllers
             var result = await _authService.RegisterAsync(registerDto);
             return result.IsSuccess
                 ? Created()
+                : Conflict(result);
+        }
+
+        [Authorize(Roles = "Administrator")]
+        [HttpPatch("grant-roles")]
+        public async Task<IActionResult> GrantUserRoles(GrantUserRolesDto grantUserRolesDto)
+        {
+            var result = await _authService.GrantUserRolesAsync(grantUserRolesDto);
+            return result.IsSuccess
+                ? NoContent()
                 : Conflict(result);
         }
     }

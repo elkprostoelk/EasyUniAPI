@@ -19,6 +19,12 @@ namespace EasyUniAPI.DataAccess
             return await _dbContext.SaveChangesAsync() > 0;
         }
 
+        public async Task<bool> InsertRangeAsync(List<TEntity> entities)
+        {
+            _dbContext.AddRange(entities);
+            return await _dbContext.SaveChangesAsync() > 0;
+        }
+
         public async Task<bool> UpdateAsync(TEntity entity)
         {
             _dbContext.Update(entity);

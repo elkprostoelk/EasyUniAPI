@@ -7,6 +7,7 @@ using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using Newtonsoft.Json;
 using Serilog;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -18,6 +19,7 @@ namespace EasyUniAPI.Core.Implementations
     {
         private readonly IValidator<LoginDto> _loginDtoValidator;
         private readonly IValidator<RegisterDto> _registerDtoValidator;
+        private readonly IValidator<GrantUserRolesDto> _grantUserRolesDtoValidator;
         private readonly IPasswordHashService _passwordHashService;
         private readonly IRepository<User, string> _userRepository;
         private readonly IRepository<UserRole, long> _userRoleRepository;
@@ -29,7 +31,8 @@ namespace EasyUniAPI.Core.Implementations
             IPasswordHashService passwordHashService,
             IRepository<User, string> userRepository,
             IOptions<JwtOptions> jwtOptions,
-            IRepository<UserRole, long> userRoleRepository)
+            IRepository<UserRole, long> userRoleRepository,
+            IValidator<GrantUserRolesDto> grantUserRolesDtoValidator)
         {
             _loginDtoValidator = loginDtoValidator;
             _registerDtoValidator = registerDtoValidator;
@@ -37,6 +40,7 @@ namespace EasyUniAPI.Core.Implementations
             _userRepository = userRepository;
             _jwtOptions = jwtOptions.Value;
             _userRoleRepository = userRoleRepository;
+            _grantUserRolesDtoValidator = grantUserRolesDtoValidator;
         }
 
         public async Task<ServiceResultDto<string>> LoginAsync(LoginDto loginDto)
@@ -116,6 +120,51 @@ namespace EasyUniAPI.Core.Implementations
             };
         }
 
+        public async Task<ServiceResultDto> GrantUserRolesAsync(GrantUserRolesDto grantUserRolesDto)
+        {
+            await _grantUserRolesDtoValidator.ValidateAndThrowAsync(grantUserRolesDto);
+
+            if (await CheckIfUserAlreadyHasRolesWhichShouldBeAddedAsync(grantUserRolesDto))
+            {
+                return new ServiceResultDto
+                {
+                    IsSuccess = false,
+                    Errors = ["The user already has some of the roles."]
+                };
+            }
+
+            var rolesGranted = await _userRoleRepository.InsertRangeAsync(
+                [.. grantUserRolesDto.RoleIds
+                    .Select(r => new UserRole { RoleId = r, UserId = grantUserRolesDto.UserId})]);
+
+            if (rolesGranted)
+            {
+                var rolesList = JsonConvert.SerializeObject(grantUserRolesDto.RoleIds);
+                Log.Information("User {UserId} has been granted role(s) {RolesList}.", grantUserRolesDto.UserId, rolesList);
+            }
+
+            return new ServiceResultDto
+            {
+                IsSuccess = rolesGranted,
+                Errors = rolesGranted ? [] : ["Failed to grant roles."]
+            };
+        }
+
+        private async Task<bool> CheckIfUserAlreadyHasRolesWhichShouldBeAddedAsync(GrantUserRolesDto grantUserRolesDto)
+        {
+            var existingUserRoleIds = await _userRoleRepository.DbSet
+                .AsNoTracking()
+                .Where(ur => ur.UserId == grantUserRolesDto.UserId)
+                .Select(ur => ur.RoleId)
+                .ToListAsync();
+
+            var alreadyExistingUserRoles = existingUserRoleIds
+                .Intersect(grantUserRolesDto.RoleIds)
+                .ToList();
+
+            return alreadyExistingUserRoles.Count > 0;
+        }
+
         private string GenerateToken(User user)
         {
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtOptions.Key));
@@ -126,7 +175,7 @@ namespace EasyUniAPI.Core.Implementations
                 claims: [
                     new Claim(ClaimTypes.NameIdentifier, user.Id),
                     new Claim(ClaimTypes.Name, user.Email),
-                    ..user.Roles.Select(r => new Claim(ClaimTypes.Role, r.Id.ToString(), ClaimValueTypes.Integer32))
+                    ..user.Roles.Select(r => new Claim(ClaimTypes.Role, r.Name))
                 ],
                 expires: DateTime.UtcNow.AddMinutes(_jwtOptions.ExpiresInMinutes),
                 signingCredentials: new SigningCredentials(key, SecurityAlgorithms.HmacSha256));
