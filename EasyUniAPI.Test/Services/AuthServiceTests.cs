@@ -45,5 +45,118 @@ namespace EasyUniAPI.Test.Services
             Assert.NotNull(result.Result);
             Assert.Empty(result.Errors);
         }
+
+        [Fact]
+        public async Task LoginAsync_NoUserFound()
+        {
+            // Arrange
+
+            var loginDto = new LoginDto
+            {
+                Login = "someuser@somemail.com",
+                Password = "strongPa$$word123"
+            };
+
+            // Act
+
+            var result = await _authService.LoginAsync(loginDto);
+
+            // Assert
+
+            Assert.False(result.IsSuccess);
+            Assert.Null(result.Result);
+            Assert.Contains("User was not found.", result.Errors);
+        }
+
+        [Fact]
+        public async Task LoginAsync_InvalidPassword()
+        {
+            // Arrange
+
+            var loginDto = new LoginDto
+            {
+                Login = "admin@admin.com",
+                Password = "strongPa$$word"
+            };
+
+            // Act
+
+            var result = await _authService.LoginAsync(loginDto);
+
+            // Assert
+
+            Assert.False(result.IsSuccess);
+            Assert.Null(result.Result);
+            Assert.Contains("Invalid password.", result.Errors);
+        }
+
+        [Fact]
+        public async Task RegisterAsync_SuccessfulRegistration()
+        {
+            // Arrange
+
+            var registerDto = new RegisterDto
+            {
+                Email = "newuser@gmail.com",
+                FirstName = "NewUser",
+                MiddleName = "Userovich",
+                LastName = "Never",
+                Password = "strongPa$$word345",
+                PhoneNumber = "+1876543210",
+                BirthDate = new DateOnly(1975, 3, 6),
+                RoleId = 2
+            };
+
+            // Act
+
+            var result = await _authService.RegisterAsync(registerDto);
+
+            // Assert
+
+            Assert.True(result.IsSuccess);
+            Assert.Empty(result.Errors);
+        }
+
+        [Fact]
+        public async Task GrantUserRolesAsync_GrantRolesSuccessfully()
+        {
+            // Arrange
+
+            var grantUserRolesDto = new GrantUserRolesDto
+            {
+                UserId = "01JST5PR09DKBYK0FJKSPW61VT",
+                RoleIds = [1, 3]
+            };
+
+            // Act
+
+            var result = await _authService.GrantUserRolesAsync(grantUserRolesDto);
+
+            // Assert
+
+            Assert.True(result.IsSuccess);
+            Assert.Empty(result.Errors);
+        }
+
+        [Fact]
+        public async Task GrantUserRolesAsync_RoleAlreadyExists_ReturnsUnsuccess()
+        {
+            // Arrange
+
+            var grantUserRolesDto = new GrantUserRolesDto
+            {
+                UserId = "01JST5PR09DKBYK0FJKSPW61VT",
+                RoleIds = [2, 3]
+            };
+
+            // Act
+
+            var result = await _authService.GrantUserRolesAsync(grantUserRolesDto);
+
+            // Assert
+
+            Assert.False(result.IsSuccess);
+            Assert.Contains("The user already has some of the roles.", result.Errors);
+        }
     }
 }

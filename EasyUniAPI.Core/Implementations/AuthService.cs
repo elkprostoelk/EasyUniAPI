@@ -116,7 +116,7 @@ namespace EasyUniAPI.Core.Implementations
             return new ServiceResultDto
             {
                 IsSuccess = roleAddedForUser,
-                Errors = roleAddedForUser ? ["Failed to create a user and assign it to the role."] : []
+                Errors = roleAddedForUser ? [] : ["Failed to create a user and assign it to the role."]
             };
         }
 
