@@ -19,7 +19,7 @@ namespace EasyUniAPI.Test.Services
                 Key = "143ba536-9d4b-45c5-b2ff-3f04e0ca1157"
             });
             var loginValidator = new LoginDtoValidator();
-            var registerValidator = new RegisterDtoValidator();
+            var registerValidator = new RegisterDtoValidator(userRepository);
             var grantUserRolesValidator = new GrantUserRolesDtoValidator(userRepository, roleRepository);
             _authService = new AuthService(loginValidator, registerValidator, new PasswordHashService(), userRepository, jwtOptions, userRoleRepository, grantUserRolesValidator);
         }
