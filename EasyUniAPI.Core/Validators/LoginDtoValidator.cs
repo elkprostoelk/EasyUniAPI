@@ -13,7 +13,7 @@ namespace EasyUniAPI.Core.Validators
 
             RuleFor(dto => dto.Password)
                 .NotEmpty()
-                .Length(8, 20);
+                .Length(8, 30);
         }
     }
 }
