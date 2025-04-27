@@ -27,6 +27,7 @@ namespace EasyUniAPI.Web.Controllers
                 : Conflict(result);
         }
 
+        [Authorize(Roles = "Administrator")]
         [HttpPost("register")]
         [ProducesResponseType(typeof(ServiceResultDto), StatusCodes.Status201Created)]
         [ProducesErrorResponseType(typeof(ProblemDetails))]
