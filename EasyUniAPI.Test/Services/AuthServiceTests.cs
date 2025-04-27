@@ -21,7 +21,9 @@ namespace EasyUniAPI.Test.Services
             var loginValidator = new LoginDtoValidator();
             var registerValidator = new RegisterDtoValidator(userRepository);
             var grantUserRolesValidator = new GrantUserRolesDtoValidator(userRepository, roleRepository);
-            _authService = new AuthService(loginValidator, registerValidator, new PasswordHashService(), userRepository, jwtOptions, userRoleRepository, grantUserRolesValidator);
+            var changePasswordValidator = new ChangePasswordDtoValidator(userRepository);
+            _authService = new AuthService(loginValidator, registerValidator, new PasswordHashService(), userRepository,
+                jwtOptions, userRoleRepository, grantUserRolesValidator, changePasswordValidator);
         }
 
         [Fact]
@@ -157,6 +159,50 @@ namespace EasyUniAPI.Test.Services
 
             Assert.False(result.IsSuccess);
             Assert.Contains("The user already has some of the roles.", result.Errors);
+        }
+
+        [Fact]
+        public async Task ChangePasswordAsync_SuccessfullyChangePassword()
+        {
+            // Arrange
+
+            var changePasswordDto = new ChangePasswordDto
+            {
+                UserId = "01JST5PR09DKBYK0FJKSPW61VT",
+                OldPassword = "strongPa$$word345",
+                NewPassword = "strongPa$$word456"
+            };
+
+            // Act
+
+            var result = await _authService.ChangePasswordAsync(changePasswordDto);
+
+            // Assert
+
+            Assert.True(result.IsSuccess);
+            Assert.Empty(result.Errors);
+        }
+
+        [Fact]
+        public async Task ChangePasswordAsync_OldPasswordInvalid_ReturnsUnsuccess()
+        {
+            // Arrange
+
+            var changePasswordDto = new ChangePasswordDto
+            {
+                UserId = "01JST5PR09DKBYK0FJKSPW61VT",
+                OldPassword = "strongPa$$word34",
+                NewPassword = "strongPa$$word456"
+            };
+
+            // Act
+
+            var result = await _authService.ChangePasswordAsync(changePasswordDto);
+
+            // Assert
+
+            Assert.False(result.IsSuccess);
+            Assert.Contains("Invalid old password.", result.Errors);
         }
     }
 }

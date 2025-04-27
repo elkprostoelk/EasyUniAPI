@@ -8,6 +8,7 @@ namespace EasyUniAPI.Web.Extensions
     {
         public static void SetupExceptionHandling(this WebApplication app)
         {
+            var isDevelopment = app.Environment.IsDevelopment();
             app.UseExceptionHandler(errorApp => errorApp.Run(async context =>
             {
                 var exceptionHandlerPathFeature = context.Features.Get<IExceptionHandlerPathFeature>();
@@ -37,7 +38,7 @@ namespace EasyUniAPI.Web.Extensions
                             {
                                 Title = "An error occured while processing the request. Please try again later",
                                 Status = StatusCodes.Status500InternalServerError,
-                                Detail = exception?.Message,
+                                Detail = isDevelopment ? exception?.Message : "See details in the application logs",
                                 Instance = context.Request.Path
                             };
 

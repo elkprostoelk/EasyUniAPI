@@ -20,6 +20,7 @@ namespace EasyUniAPI.Core.Implementations
         private readonly IValidator<LoginDto> _loginDtoValidator;
         private readonly IValidator<RegisterDto> _registerDtoValidator;
         private readonly IValidator<GrantUserRolesDto> _grantUserRolesDtoValidator;
+        private readonly IValidator<ChangePasswordDto> _changePasswordDtoValidator;
         private readonly IPasswordHashService _passwordHashService;
         private readonly IRepository<User, string> _userRepository;
         private readonly IRepository<UserRole, long> _userRoleRepository;
@@ -32,7 +33,8 @@ namespace EasyUniAPI.Core.Implementations
             IRepository<User, string> userRepository,
             IOptions<JwtOptions> jwtOptions,
             IRepository<UserRole, long> userRoleRepository,
-            IValidator<GrantUserRolesDto> grantUserRolesDtoValidator)
+            IValidator<GrantUserRolesDto> grantUserRolesDtoValidator,
+            IValidator<ChangePasswordDto> changePasswordDtoValidator)
         {
             _loginDtoValidator = loginDtoValidator;
             _registerDtoValidator = registerDtoValidator;
@@ -41,6 +43,7 @@ namespace EasyUniAPI.Core.Implementations
             _jwtOptions = jwtOptions.Value;
             _userRoleRepository = userRoleRepository;
             _grantUserRolesDtoValidator = grantUserRolesDtoValidator;
+            _changePasswordDtoValidator = changePasswordDtoValidator;
         }
 
         public async Task<ServiceResultDto<string>> LoginAsync(LoginDto loginDto)
@@ -150,6 +153,40 @@ namespace EasyUniAPI.Core.Implementations
             };
         }
 
+        public async Task<ServiceResultDto> ChangePasswordAsync(ChangePasswordDto changePasswordDto)
+        {
+            await _changePasswordDtoValidator.ValidateAndThrowAsync(changePasswordDto);
+
+            var user = await _userRepository.DbSet
+                .FirstAsync(u => u.Id == changePasswordDto.UserId);
+
+            var (hash, _) = _passwordHashService.HashPassword(changePasswordDto.OldPassword, user.PasswordSalt);
+            if (user.PasswordHash != hash)
+            {
+                return new ServiceResultDto
+                {
+                    IsSuccess = false,
+                    Errors = ["Invalid old password."]
+                };
+            }
+
+            (user.PasswordHash, _) = _passwordHashService.HashPassword(changePasswordDto.NewPassword, user.PasswordSalt);
+
+            var passwordChanged = await _userRepository.UpdateAsync(user);
+            if (passwordChanged)
+            {
+                Log.Information("Password has been updated for the user {UserId}.", changePasswordDto.UserId);
+            }
+
+            return new ServiceResultDto
+            {
+                IsSuccess = passwordChanged,
+                Errors = passwordChanged ? [] : ["Failed to change a password."]
+            };
+        }
+
+        #region "Private methods"
+
         private async Task<bool> CheckIfUserAlreadyHasRolesWhichShouldBeAddedAsync(GrantUserRolesDto grantUserRolesDto)
         {
             var existingUserRoleIds = await _userRoleRepository.DbSet
@@ -182,5 +219,7 @@ namespace EasyUniAPI.Core.Implementations
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
+
+        #endregion
     }
 }

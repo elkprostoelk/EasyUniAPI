@@ -7,5 +7,6 @@ namespace EasyUniAPI.Core.Interfaces
         Task<ServiceResultDto<string>> LoginAsync(LoginDto loginDto);
         Task<ServiceResultDto> RegisterAsync(RegisterDto registerDto);
         Task<ServiceResultDto> GrantUserRolesAsync(GrantUserRolesDto grantUserRolesDto);
+        Task<ServiceResultDto> ChangePasswordAsync(ChangePasswordDto changePasswordDto);
     }
 }

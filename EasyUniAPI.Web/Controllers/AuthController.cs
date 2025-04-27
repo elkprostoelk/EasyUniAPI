@@ -1,5 +1,6 @@
 ﻿using EasyUniAPI.Common.Dto;
 using EasyUniAPI.Core.Interfaces;
+using EasyUniAPI.Web.Extensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -41,9 +42,29 @@ namespace EasyUniAPI.Web.Controllers
 
         [Authorize(Roles = "Administrator")]
         [HttpPatch("grant-roles")]
+        [ProducesResponseType(typeof(ServiceResultDto), StatusCodes.Status204NoContent)]
+        [ProducesErrorResponseType(typeof(ProblemDetails))]
         public async Task<IActionResult> GrantUserRoles(GrantUserRolesDto grantUserRolesDto)
         {
             var result = await _authService.GrantUserRolesAsync(grantUserRolesDto);
+            return result.IsSuccess
+                ? NoContent()
+                : Conflict(result);
+        }
+
+        [Authorize]
+        [HttpPatch("change-password")]
+        [ProducesResponseType(typeof(ServiceResultDto), StatusCodes.Status204NoContent)]
+        [ProducesErrorResponseType(typeof(ProblemDetails))]
+        public async Task<IActionResult> ChangePassword(ChangePasswordDto changePasswordDto)
+        {
+            var currentUserId = User.GetUserId();
+            if (currentUserId != changePasswordDto.UserId && !User.IsInRoles("Administrator"))
+            {
+                return Forbid();
+            }
+
+            var result = await _authService.ChangePasswordAsync(changePasswordDto);
             return result.IsSuccess
                 ? NoContent()
                 : Conflict(result);
