@@ -24,6 +24,11 @@ builder.Host.UseSerilog(Log.Logger);
 
 // Add services to the container.
 
+builder.Services.AddRouting(options =>
+{
+    options.LowercaseUrls = true;
+});
+
 builder.Services.RegisterAuth(configuration);
 builder.Services.RegisterCors(configuration, CorsPolicy);
 
@@ -45,7 +50,7 @@ builder.Services.AddSwaggerGen(options =>
     options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Name = "Authorization",
-        Type = SecuritySchemeType.Http,
+        Type = SecuritySchemeType.ApiKey,
         Scheme = "Bearer",
         BearerFormat = "JWT",
         In = ParameterLocation.Header,
