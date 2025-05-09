@@ -29,6 +29,18 @@ namespace EasyUniAPI.Web.Controllers
         }
 
         [Authorize(Roles = "Administrator")]
+        [HttpPatch("unlock-user/{userId}")]
+        [ProducesResponseType(typeof(ServiceResultDto), StatusCodes.Status204NoContent)]
+        [ProducesErrorResponseType(typeof(ProblemDetails))]
+        public async Task<IActionResult> UnlockUser(string userId)
+        {
+            var result = await _authService.UnlockUserAsync(userId);
+            return result.IsSuccess
+                ? NoContent()
+                : Conflict(result);
+        }
+
+        [Authorize(Roles = "Administrator")]
         [HttpPost("register")]
         [ProducesResponseType(typeof(ServiceResultDto), StatusCodes.Status201Created)]
         [ProducesErrorResponseType(typeof(ProblemDetails))]

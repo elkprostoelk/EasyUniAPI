@@ -1,14 +1,17 @@
 ﻿using EasyUniAPI.Common.Configurations;
 using EasyUniAPI.Common.Dto;
 using EasyUniAPI.Core.Implementations;
+using EasyUniAPI.Core.Interfaces;
 using EasyUniAPI.Core.Validators;
 using Microsoft.Extensions.Options;
+using Moq;
 
 namespace EasyUniAPI.Test.Services
 {
     public class AuthServiceTests : BaseServiceTests
     {
         private readonly AuthService _authService;
+        private readonly Mock<IClaimsProvider> _claimsProviderMock = new();
 
         public AuthServiceTests()
         {
@@ -22,9 +25,12 @@ namespace EasyUniAPI.Test.Services
             var registerValidator = new RegisterDtoValidator(userRepository);
             var grantUserRolesValidator = new GrantUserRolesDtoValidator(userRepository, roleRepository);
             var changePasswordValidator = new ChangePasswordDtoValidator(userRepository);
+
             _authService = new AuthService(loginValidator, registerValidator, new PasswordHashService(), userRepository,
-                jwtOptions, userRoleRepository, grantUserRolesValidator, changePasswordValidator);
+                jwtOptions, userRoleRepository, grantUserRolesValidator, changePasswordValidator, _claimsProviderMock.Object);
         }
+
+        #region LoginAsync tests
 
         [Fact]
         public async Task LoginAsync_SuccessfulLogsIn()
@@ -89,8 +95,12 @@ namespace EasyUniAPI.Test.Services
 
             Assert.False(result.IsSuccess);
             Assert.Null(result.Result);
-            Assert.Contains("Invalid password.", result.Errors);
+            Assert.Contains("Invalid password. You have 4 login attempt(s) left.", result.Errors);
         }
+
+        #endregion
+
+        #region RegisterAsync tests
 
         [Fact]
         public async Task RegisterAsync_SuccessfulRegistration()
@@ -118,6 +128,10 @@ namespace EasyUniAPI.Test.Services
             Assert.True(result.IsSuccess);
             Assert.Empty(result.Errors);
         }
+
+        #endregion
+
+        #region GrantUserRolesAsync tests
 
         [Fact]
         public async Task GrantUserRolesAsync_GrantRolesSuccessfully()
@@ -160,6 +174,10 @@ namespace EasyUniAPI.Test.Services
             Assert.False(result.IsSuccess);
             Assert.Contains("The user already has some of the roles.", result.Errors);
         }
+
+        #endregion
+
+        #region ChangePasswordAsync tests
 
         [Fact]
         public async Task ChangePasswordAsync_SuccessfullyChangePassword()
@@ -204,5 +222,47 @@ namespace EasyUniAPI.Test.Services
             Assert.False(result.IsSuccess);
             Assert.Contains("Invalid old password.", result.Errors);
         }
+
+        #endregion
+
+        #region UnlockUserAsync tests
+
+        [Fact]
+        public async Task UnlockUserAsync_SuccessfullyUnlockUser()
+        {
+            // Arrange
+
+            _claimsProviderMock.Setup(s => s.GetLoggedInUserRoles())
+                .Returns(["Administrator"]);
+
+            // Act
+
+            var result = await _authService.UnlockUserAsync("01JTV1XEAH8ZT963X8XE3ACJ69");
+
+            // Assert
+
+            Assert.True(result.IsSuccess);
+            Assert.Empty(result.Errors);
+        }
+
+        [Fact]
+        public async Task UnlockUserAsync_UserAlreadyActive_ReturnsUnsuccess()
+        {
+            // Arrange
+
+            _claimsProviderMock.Setup(s => s.GetLoggedInUserRoles())
+                .Returns(["Administrator"]);
+
+            // Act
+
+            var result = await _authService.UnlockUserAsync("01JST5PR09DKBYK0FJKSPW61VT");
+
+            // Assert
+
+            Assert.False(result.IsSuccess);
+            Assert.Contains("User is already active.", result.Errors);
+        }
+
+        #endregion
     }
 }

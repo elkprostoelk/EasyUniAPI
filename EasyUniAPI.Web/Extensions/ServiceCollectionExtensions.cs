@@ -67,10 +67,13 @@ namespace EasyUniAPI.Web.Extensions
 
             services.AddValidatorsFromAssemblies(AppDomain.CurrentDomain.GetAssemblies());
 
+            services.AddHttpContextAccessor();
+
             services.AddScoped<IRepository<User, string>, Repository<User, string>>();
             services.AddScoped<IRepository<UserRole, long>, Repository<UserRole, long>>();
             services.AddScoped<IRepository<Role, int>, Repository<Role, int>>();
 
+            services.AddScoped<IClaimsProvider, ClaimsProvider>();
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IPasswordHashService, PasswordHashService>();
         }

@@ -45,6 +45,13 @@ namespace EasyUniAPI.DataAccess.Configurations
                 .HasMaxLength(256)
                 .IsRequired();
 
+            builder.Property(u => u.Active)
+                .IsRequired()
+                .HasDefaultValue(true);
+
+            builder.Property(u => u.FailedLoginAttempts)
+                .IsRequired();
+
             builder.HasMany(u => u.Roles)
                 .WithMany(r => r.Users)
                 .UsingEntity<UserRole>(

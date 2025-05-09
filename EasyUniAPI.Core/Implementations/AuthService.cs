@@ -25,6 +25,9 @@ namespace EasyUniAPI.Core.Implementations
         private readonly IRepository<User, string> _userRepository;
         private readonly IRepository<UserRole, long> _userRoleRepository;
         private readonly JwtOptions _jwtOptions;
+        private readonly IClaimsProvider _claimsProvider;
+
+        private const int MaxFailedLoginAttempts = 5;
 
         public AuthService(
             IValidator<LoginDto> loginDtoValidator,
@@ -34,7 +37,8 @@ namespace EasyUniAPI.Core.Implementations
             IOptions<JwtOptions> jwtOptions,
             IRepository<UserRole, long> userRoleRepository,
             IValidator<GrantUserRolesDto> grantUserRolesDtoValidator,
-            IValidator<ChangePasswordDto> changePasswordDtoValidator)
+            IValidator<ChangePasswordDto> changePasswordDtoValidator,
+            IClaimsProvider claimsProvider)
         {
             _loginDtoValidator = loginDtoValidator;
             _registerDtoValidator = registerDtoValidator;
@@ -44,6 +48,7 @@ namespace EasyUniAPI.Core.Implementations
             _userRoleRepository = userRoleRepository;
             _grantUserRolesDtoValidator = grantUserRolesDtoValidator;
             _changePasswordDtoValidator = changePasswordDtoValidator;
+            _claimsProvider = claimsProvider;
         }
 
         public async Task<ServiceResultDto<string>> LoginAsync(LoginDto loginDto)
@@ -51,7 +56,6 @@ namespace EasyUniAPI.Core.Implementations
             await _loginDtoValidator.ValidateAndThrowAsync(loginDto);
 
             var user = await _userRepository.DbSet
-                .AsNoTracking()
                 .Include(u => u.Roles)
                 .FirstOrDefaultAsync(u => u.Email == loginDto.Login);
             if (user is null)
@@ -66,11 +70,73 @@ namespace EasyUniAPI.Core.Implementations
             var (hash, _) = _passwordHashService.HashPassword(loginDto.Password, user.PasswordSalt);
             var isPasswordValid = user.PasswordHash == hash;
 
+            if (!isPasswordValid)
+            {
+                ++user.FailedLoginAttempts;
+                if (user.FailedLoginAttempts == MaxFailedLoginAttempts)
+                {
+                    user.Active = false;
+                    Log.Information("User {userEmail} was blocked after {failedAttempts} failed login attempts.", user.Email, user.FailedLoginAttempts);
+                }
+
+                await _userRepository.UpdateAsync(user);
+            }
+
             return new ServiceResultDto<string>
             {
                 IsSuccess = isPasswordValid,
-                Errors = isPasswordValid ? [] : ["Invalid password."],
+                Errors = isPasswordValid ? []
+                    : [$"Invalid password. You have {MaxFailedLoginAttempts - user.FailedLoginAttempts} login attempt(s) left."],
                 Result = isPasswordValid ? GenerateToken(user) : null
+            };
+        }
+
+        public async Task<ServiceResultDto> UnlockUserAsync(string userId)
+        {
+            var loggedInUserRoles = _claimsProvider.GetLoggedInUserRoles();
+            if (!loggedInUserRoles.Contains("Administrator", StringComparer.OrdinalIgnoreCase))
+            {
+                return new ServiceResultDto
+                {
+                    IsSuccess = false,
+                    Errors = ["You do not have permission to unlock users."]
+                };
+            }
+
+            var isUserIdValid = await ValidateUserIdAsync(userId);
+            if (!isUserIdValid)
+            {
+                return new ServiceResultDto
+                {
+                    IsSuccess = false,
+                    Errors = ["User ID is not valid."]
+                };
+            }
+
+            var user = await _userRepository.DbSet
+                .FirstAsync(u => u.Id == userId);
+
+            if (user.Active)
+            {
+                return new ServiceResultDto
+                {
+                    IsSuccess = false,
+                    Errors = ["User is already active."]
+                };
+            }
+
+            user.Active = true;
+            user.FailedLoginAttempts = 0;
+
+            var userUpdated = await _userRepository.UpdateAsync(user);
+            if (userUpdated)
+            {
+                Log.Information("User {userEmail} has been unlocked.", user.Email);
+            }
+            return new ServiceResultDto
+            {
+                IsSuccess = userUpdated,
+                Errors = userUpdated ? [] : ["Failed to unlock the user."]
             };
         }
 
@@ -185,7 +251,15 @@ namespace EasyUniAPI.Core.Implementations
             };
         }
 
-        #region "Private methods"
+        #region Private methods
+
+        private async Task<bool> ValidateUserIdAsync(string userId)
+        {
+            return !string.IsNullOrWhiteSpace(userId)
+                && await _userRepository.DbSet
+                       .AsNoTracking()
+                       .AnyAsync(u => u.Id == userId);
+        }
 
         private async Task<bool> CheckIfUserAlreadyHasRolesWhichShouldBeAddedAsync(GrantUserRolesDto grantUserRolesDto)
         {

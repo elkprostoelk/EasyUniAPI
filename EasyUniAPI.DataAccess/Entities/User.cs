@@ -22,6 +22,10 @@ namespace EasyUniAPI.DataAccess.Entities
 
         public string PasswordHash { get; set; } = string.Empty;
 
+        public bool Active { get; set; } = true;
+
+        public int FailedLoginAttempts { get; set; }
+
         public virtual List<Role> Roles { get; set; } = [];
     }
 }
