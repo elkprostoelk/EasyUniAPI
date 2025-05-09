@@ -32,7 +32,8 @@ namespace EasyUniAPI.Test.Services
             easyUniDbContext.Users.AddRange(
                 new User { Id = "01JSMN2ZYJTXZ93HNTZJF593TH", FirstName = "Admin", MiddleName = "Adminovich", LastName = "Admin", Email = "admin@admin.com", PhoneNumber = "+1234567890", BirthDate = new DateOnly(1990, 1, 1), PasswordHash = "UxgDBwC9sS+9Wl+b5MOPRdNlSzURsNBhIC5OQFVwkOQ=", PasswordSalt = "9KrQ5NYDug57LGh/A+ctgA==" }, // pass: strongPa$$word123
                 new User { Id = "01JST5PR09DKBYK0FJKSPW61VT", FirstName = "Teacher", MiddleName = "Teacherovich", LastName = "Never", Email = "teacher.never@gmail.com", PhoneNumber = "+1111111111", BirthDate = new DateOnly(1980, 7, 26), PasswordHash = "yszyVc9o1X6wLL+Vw+lgSi4rPvvrO4YUGHjqaPWTlW0=", PasswordSalt = "Zw61OdyX5hJwjWB2FQimZA==" }, // pass: strongPa$$word345
-                new User { Id = "01JTV1XEAH8ZT963X8XE3ACJ69", FirstName = "StudentOne", MiddleName = "Studentovich", LastName = "Never", Email = "studentone.never@gmail.com", PhoneNumber = "+2222222222", BirthDate = new DateOnly(2005, 11, 3), PasswordHash = "y6wWFj59IfYdkKtcrisDKXStvstM9q8d7lU4ZXkCIoE=", PasswordSalt = "IhrtoCrp2+W+/8I9Or6xPQ==", Active = false } // pass: strongPa$$word567
+                new User { Id = "01JTV1XEAH8ZT963X8XE3ACJ69", FirstName = "StudentOne", MiddleName = "Studentovich", LastName = "Never", Email = "studentone.never@gmail.com", PhoneNumber = "+2222222222", BirthDate = new DateOnly(2005, 11, 3), PasswordHash = "y6wWFj59IfYdkKtcrisDKXStvstM9q8d7lU4ZXkCIoE=", PasswordSalt = "IhrtoCrp2+W+/8I9Or6xPQ==", Active = false }, // pass: strongPa$$word567
+                new User { Id = "01JTV3TNF472B9C3V4ZK9Y8R13", FirstName = "StudentTwo", MiddleName = "Studentovich", LastName = "Never", Email = "studenttwo.never@gmail.com", PhoneNumber = "+3333333333", BirthDate = new DateOnly(2005, 5, 9), PasswordHash = "wtqBQmpbapgG73j0BA1PQdZcnY98xTfveTXnT0w4m7s=", PasswordSalt = "mw1PKXgQu1g1S4r/CKzXjQ==", Active = false, FailedLoginAttempts = 5 } // pass: strongPa$$word789
                 );
 
             easyUniDbContext.SaveChanges();
@@ -42,7 +43,8 @@ namespace EasyUniAPI.Test.Services
                 new UserRole { UserId = "01JSMN2ZYJTXZ93HNTZJF593TH", RoleId = 2 },
                 new UserRole { UserId = "01JSMN2ZYJTXZ93HNTZJF593TH", RoleId = 3 },
                 new UserRole { UserId = "01JST5PR09DKBYK0FJKSPW61VT", RoleId = 2 },
-                new UserRole { UserId = "01JTV1XEAH8ZT963X8XE3ACJ69", RoleId = 3 }
+                new UserRole { UserId = "01JTV1XEAH8ZT963X8XE3ACJ69", RoleId = 3 },
+                new UserRole { UserId = "01JTV3TNF472B9C3V4ZK9Y8R13", RoleId = 3 }
                 );
             easyUniDbContext.SaveChanges();
         }

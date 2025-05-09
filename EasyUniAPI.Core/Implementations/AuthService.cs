@@ -67,6 +67,15 @@ namespace EasyUniAPI.Core.Implementations
                 };
             }
 
+            if (!user.Active)
+            {
+                return new ServiceResultDto<string>
+                {
+                    IsSuccess = false,
+                    Errors = ["User is blocked. Please contact the administrator team."]
+                };
+            }
+
             var (hash, _) = _passwordHashService.HashPassword(loginDto.Password, user.PasswordSalt);
             var isPasswordValid = user.PasswordHash == hash;
 

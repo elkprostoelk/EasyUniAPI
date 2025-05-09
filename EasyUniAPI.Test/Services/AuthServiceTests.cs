@@ -98,6 +98,28 @@ namespace EasyUniAPI.Test.Services
             Assert.Contains("Invalid password. You have 4 login attempt(s) left.", result.Errors);
         }
 
+        [Fact]
+        public async Task LoginAsync_UserBlocked()
+        {
+            // Arrange
+
+            var loginDto = new LoginDto
+            {
+                Login = "studenttwo.never@gmail.com",
+                Password = "strongPa$$word789"
+            };
+
+            // Act
+
+            var result = await _authService.LoginAsync(loginDto);
+
+            // Assert
+
+            Assert.False(result.IsSuccess);
+            Assert.Null(result.Result);
+            Assert.Contains("User is blocked. Please contact the administrator team.", result.Errors);
+        }
+
         #endregion
 
         #region RegisterAsync tests
