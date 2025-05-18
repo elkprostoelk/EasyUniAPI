@@ -13,4 +13,8 @@
     <PackageReference Include="NUlid" Version="1.7.2" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\EasyUniAPI.Common\EasyUniAPI.Common.csproj" />
+  </ItemGroup>
+
 </Project>

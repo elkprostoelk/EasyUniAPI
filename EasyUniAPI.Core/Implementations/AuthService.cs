@@ -1,6 +1,7 @@
 ﻿using EasyUniAPI.Common.Configurations;
 using EasyUniAPI.Common.Dto;
 using EasyUniAPI.Core.Interfaces;
+using EasyUniAPI.Core.Mappers;
 using EasyUniAPI.DataAccess;
 using EasyUniAPI.DataAccess.Entities;
 using FluentValidation;
@@ -153,15 +154,7 @@ namespace EasyUniAPI.Core.Implementations
         {
             await _registerDtoValidator.ValidateAndThrowAsync(registerDto);
 
-            var user = new User
-            {
-                Email = registerDto.Email,
-                FirstName = registerDto.FirstName,
-                LastName = registerDto.LastName,
-                MiddleName = registerDto.MiddleName,
-                PhoneNumber = registerDto.PhoneNumber,
-                BirthDate = registerDto.BirthDate
-            };
+            var user = registerDto.MapRegisterDtoToUser();
 
             (user.PasswordHash, user.PasswordSalt) = _passwordHashService.HashPassword(registerDto.Password);
 

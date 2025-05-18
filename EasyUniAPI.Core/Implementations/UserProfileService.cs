@@ -1,5 +1,6 @@
 ﻿using EasyUniAPI.Common.Dto;
 using EasyUniAPI.Core.Interfaces;
+using EasyUniAPI.Core.Mappers;
 using EasyUniAPI.DataAccess;
 using EasyUniAPI.DataAccess.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -32,15 +33,7 @@ namespace EasyUniAPI.Core.Implementations
             return new ServiceResultDto<UserProfileDto>
             {
                 IsSuccess = true,
-                Result = new UserProfileDto
-                {
-                    Email = user.Email,
-                    FirstName = user.FirstName,
-                    LastName = user.LastName,
-                    MiddleName = user.MiddleName,
-                    BirthDate = user.BirthDate,
-                    PhoneNumber = user.PhoneNumber
-                }
+                Result = user.MapUserToUserProfileDto()
             };
         }
     }

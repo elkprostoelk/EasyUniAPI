@@ -13,6 +13,9 @@ namespace EasyUniAPI.DataAccess.Configurations
                 .HasMaxLength(26)
                 .IsRequired();
 
+            builder.Property(u => u.Gender)
+                .IsRequired();
+
             builder.Property(u => u.BirthDate)
                 .IsRequired();
 

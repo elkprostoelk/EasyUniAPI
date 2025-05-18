@@ -131,9 +131,10 @@ namespace EasyUniAPI.Test.Services
 
             var registerDto = new RegisterDto
             {
+                Gender = Common.Enums.Gender.Female,
                 Email = "newuser@gmail.com",
                 FirstName = "NewUser",
-                MiddleName = "Userovich",
+                MiddleName = "Userivna",
                 LastName = "Never",
                 Password = "strongPa$$word345",
                 PhoneNumber = "+1876543210",

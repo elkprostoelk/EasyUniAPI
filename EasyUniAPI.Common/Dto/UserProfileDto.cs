@@ -1,17 +1,21 @@
-﻿namespace EasyUniAPI.Common.Dto
+﻿using EasyUniAPI.Common.Enums;
+
+namespace EasyUniAPI.Common.Dto
 {
     public class UserProfileDto
     {
-        public required string Email { get; set; }
+        public Gender Gender { get; set; }
 
-        public required string FirstName { get; set; }
+        public string Email { get; set; } = string.Empty;
 
-        public required string LastName { get; set; }
+        public string FirstName { get; set; } = string.Empty;
+
+        public string LastName { get; set; } = string.Empty;
 
         public string? MiddleName { get; set; }
 
         public DateOnly BirthDate { get; set; }
 
-        public required string PhoneNumber { get; set; }
+        public string PhoneNumber { get; set; } = string.Empty;
     }
 }

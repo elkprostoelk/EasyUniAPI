@@ -14,6 +14,10 @@ namespace EasyUniAPI.Core.Validators
         {
             _userRepository = userRepository;
 
+            RuleFor(dto => dto.Gender)
+                .NotNull()
+                .IsInEnum();
+
             RuleFor(dto => dto.Email)
                 .EmailAddress()
                 .NotEmpty()

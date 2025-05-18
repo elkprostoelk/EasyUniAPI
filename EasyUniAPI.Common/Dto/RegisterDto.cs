@@ -1,7 +1,11 @@
-﻿namespace EasyUniAPI.Common.Dto
+﻿using EasyUniAPI.Common.Enums;
+
+namespace EasyUniAPI.Common.Dto
 {
     public class RegisterDto
     {
+        public Gender Gender { get; set; } 
+
         public required string Email { get; set; }
 
         public required string FirstName { get; set; }
