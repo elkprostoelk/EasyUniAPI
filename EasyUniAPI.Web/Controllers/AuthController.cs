@@ -18,7 +18,7 @@ namespace EasyUniAPI.Web.Controllers
         }
 
         [HttpPost("login")]
-        [ProducesResponseType(typeof(ServiceResultDto<string>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ServiceResultDto<string>), StatusCodes.Status200OK, "application/json")]
         [ProducesErrorResponseType(typeof(ProblemDetails))]
         public async Task<IActionResult> Login(LoginDto loginDto)
         {
@@ -30,7 +30,7 @@ namespace EasyUniAPI.Web.Controllers
 
         [Authorize(Roles = "Administrator")]
         [HttpPatch("unlock-user/{userId}")]
-        [ProducesResponseType(typeof(ServiceResultDto), StatusCodes.Status204NoContent)]
+        [ProducesResponseType(typeof(ServiceResultDto), StatusCodes.Status204NoContent, "application/json")]
         [ProducesErrorResponseType(typeof(ProblemDetails))]
         public async Task<IActionResult> UnlockUser(string userId)
         {
@@ -42,7 +42,7 @@ namespace EasyUniAPI.Web.Controllers
 
         [Authorize(Roles = "Administrator")]
         [HttpPost("register")]
-        [ProducesResponseType(typeof(ServiceResultDto), StatusCodes.Status201Created)]
+        [ProducesResponseType(typeof(ServiceResultDto), StatusCodes.Status201Created, "application/json")]
         [ProducesErrorResponseType(typeof(ProblemDetails))]
         public async Task<IActionResult> Register(RegisterDto registerDto)
         {
@@ -54,7 +54,7 @@ namespace EasyUniAPI.Web.Controllers
 
         [Authorize(Roles = "Administrator")]
         [HttpPatch("grant-roles")]
-        [ProducesResponseType(typeof(ServiceResultDto), StatusCodes.Status204NoContent)]
+        [ProducesResponseType(typeof(ServiceResultDto), StatusCodes.Status204NoContent, "application/json")]
         [ProducesErrorResponseType(typeof(ProblemDetails))]
         public async Task<IActionResult> GrantUserRoles(GrantUserRolesDto grantUserRolesDto)
         {
@@ -66,7 +66,7 @@ namespace EasyUniAPI.Web.Controllers
 
         [Authorize]
         [HttpPatch("change-password")]
-        [ProducesResponseType(typeof(ServiceResultDto), StatusCodes.Status204NoContent)]
+        [ProducesResponseType(typeof(ServiceResultDto), StatusCodes.Status204NoContent, "application/json")]
         [ProducesErrorResponseType(typeof(ProblemDetails))]
         public async Task<IActionResult> ChangePassword(ChangePasswordDto changePasswordDto)
         {

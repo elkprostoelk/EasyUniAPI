@@ -76,6 +76,7 @@ namespace EasyUniAPI.Web.Extensions
             services.AddScoped<IClaimsProvider, ClaimsProvider>();
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IPasswordHashService, PasswordHashService>();
+            services.AddScoped<IUserProfileService, UserProfileService>();
         }
     }
 }
